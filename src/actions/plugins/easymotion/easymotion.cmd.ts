@@ -23,7 +23,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     // Clear existing markers, just in case
     vimState.easyMotion.clearMarkers();
 
-    var index = 0;
+    let index = 0;
     for (const match of matches) {
       const pos = this.getMatchPosition(match, position, vimState);
 

@@ -85,22 +85,22 @@ export class EasyMotion {
     markerPosition: Position
   ): EasyMotion.Marker | null {
     const keyTable = EasyMotion.keyTable;
-    var availableKeyTable = keyTable.slice();
+    let availableKeyTable = keyTable.slice();
 
     // Depth table should always include a ;
     const keyDepthTable = [';'];
-    var totalSteps = 0;
+    let totalSteps = 0;
 
     if (length >= keyTable.length) {
       const totalRemainder = Math.max(length - keyTable.length, 0);
       totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-      for (var i = 0; i < Math.min(totalSteps, 26); i++) {
+      for (let i = 0; i < Math.min(totalSteps, 26); i++) {
         keyDepthTable.push(availableKeyTable.pop()!);
       }
     }
 
-    var prefix = '';
+    let prefix = '';
     if (index >= availableKeyTable.length) {
       // Length of available keys before reset and ";"
       const oldLength = availableKeyTable.length;
@@ -243,7 +243,7 @@ export class EasyMotion {
    */
   public clearDecorations() {
     const editor = vscode.window.activeTextEditor!;
-    for (var i = 1; i <= this.decorations.length; i++) {
+    for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
   }
@@ -298,8 +298,8 @@ export class EasyMotion {
     const matches: EasyMotion.Match[] = [];
 
     // Cursor index refers to the index of the marker that is on or to the right of the cursor
-    var cursorIndex = position.character;
-    var prevMatch: EasyMotion.Match | undefined;
+    let cursorIndex = position.character;
+    let prevMatch: EasyMotion.Match | undefined;
 
     // Calculate the min/max bounds for the search
     const lineCount = TextEditor.getLineCount();
@@ -308,7 +308,7 @@ export class EasyMotion {
 
     outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
       const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
-      var result = regex.exec(line);
+      let result = regex.exec(line);
 
       while (result) {
         if (matches.length >= 1000) {
@@ -353,8 +353,8 @@ export class EasyMotion {
       const diffA = cursorIndex - a.index;
       const diffB = cursorIndex - b.index;
 
-      var absDiffA = Math.abs(diffA);
-      var absDiffB = Math.abs(diffB);
+      let absDiffA = Math.abs(diffA);
+      let absDiffB = Math.abs(diffB);
 
       // Prioritize the matches on the right side of the cursor index
       if (a.index < cursorIndex) {
@@ -380,7 +380,7 @@ export class EasyMotion {
     const fontSize = Configuration.easymotionMarkerFontSize;
     const fontWeight = Configuration.easymotionMarkerFontWeight;
 
-    for (var i = 0; i < this.markers.length; i++) {
+    for (let i = 0; i < this.markers.length; i++) {
       const marker = this.getMarker(i);
 
       // Ignore markers that do not start with the accumulated depth level
@@ -439,7 +439,7 @@ export class EasyMotion {
 
     // Set the decorations for all the different marker lengths
     const editor = vscode.window.activeTextEditor!;
-    for (var j = 1; j < this.decorations.length; j++) {
+    for (let j = 1; j < this.decorations.length; j++) {
       if (this.decorations[j]) {
         editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
       }

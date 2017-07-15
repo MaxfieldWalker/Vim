@@ -24,17 +24,14 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     vimState.easyMotion.clearMarkers();
 
     var index = 0;
-    for (var j = 0; j < matches.length; j++) {
-      var match = matches[j];
-      var pos = this.getMatchPosition(match, position, vimState);
+    for (const match of matches) {
+      const pos = this.getMatchPosition(match, position, vimState);
 
-      if (match.position.isEqual(position)) {
-        continue;
-      }
-
-      let marker = EasyMotion.generateMarker(index++, matches.length, position, pos);
-      if (marker) {
-        vimState.easyMotion.addMarker(marker);
+      if (!match.position.isEqual(position)) {
+        const marker = EasyMotion.generateMarker(index++, matches.length, position, pos);
+        if (marker) {
+          vimState.easyMotion.addMarker(marker);
+        }
       }
     }
   }
@@ -46,7 +43,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
 
     // Search all occurences of the character pressed
-    let matches = this.getMatches(position, vimState);
+    const matches = this.getMatches(position, vimState);
 
     // Stop if there are no matches
     if (matches.length === 0) {
@@ -264,11 +261,11 @@ class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line after the cursor
-    let matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), {
+    const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), {
       min: position,
     });
 
-    for (let match of matches) {
+    for (const match of matches) {
       match.position = match.position.getFirstLineNonBlankChar();
     }
     return matches;
@@ -282,11 +279,11 @@ class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor
-    let matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), {
+    const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), {
       max: position,
     });
 
-    for (let match of matches) {
+    for (const match of matches) {
       match.position = match.position.getFirstLineNonBlankChar();
     }
     return matches;
@@ -299,17 +296,17 @@ class MoveEasyMotion extends BaseCommand {
   keys = ['<character>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    var key = this.keysPressed[0];
+    const key = this.keysPressed[0];
     if (!key) {
       return vimState;
     }
 
     // "nail" refers to the accumulated depth keys
-    var nail = vimState.easyMotion.accumulation + key;
+    const nail = vimState.easyMotion.accumulation + key;
     vimState.easyMotion.accumulation = nail;
 
     // Find markers starting with "nail"
-    var markers = vimState.easyMotion.findMarkers(nail);
+    const markers = vimState.easyMotion.findMarkers(nail);
 
     // If previous mode was visual, restore visual selection
     if (
@@ -323,7 +320,7 @@ class MoveEasyMotion extends BaseCommand {
 
     if (markers.length === 1) {
       // Only one found, navigate to it
-      var marker = markers[0];
+      const marker = markers[0];
 
       vimState.easyMotion.clearDecorations();
       // Restore the mode from before easy motion

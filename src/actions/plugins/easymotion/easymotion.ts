@@ -14,7 +14,7 @@ export class EasyMotion {
    */
   private markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
-  private decorations: any[][];
+  private decorations: vscode.DecorationOptions[][];
 
   /**
    * TODO: For future motions
@@ -379,10 +379,9 @@ export class EasyMotion {
     const fontFamily = Configuration.easymotionMarkerFontFamily;
     const fontSize = Configuration.easymotionMarkerFontSize;
     const fontWeight = Configuration.easymotionMarkerFontWeight;
+    const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
-    for (let i = 0; i < this.markers.length; i++) {
-      const marker = this.getMarker(i);
-
+    for (const marker of this.markers) {
       // Ignore markers that do not start with the accumulated depth level
       if (!marker.name.startsWith(this.accumulation)) {
         continue;
@@ -400,37 +399,26 @@ export class EasyMotion {
         keystroke.length > 1
           ? Configuration.easymotionMarkerForegroundColorTwoChar
           : Configuration.easymotionMarkerForegroundColorOneChar;
-      const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
       const charPos = pos.character + 1 + (keystroke.length - 1);
+      const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
+        after: {
+          contentIconPath: EasyMotion.getSvgDataUri(
+            keystroke,
+            backgroundColor,
+            fontFamily,
+            fontColor,
+            fontSize,
+            fontWeight
+          ),
+        }
+      };
       this.decorations[keystroke.length].push({
         range: new vscode.Range(pos.line, charPos, pos.line, charPos),
         renderOptions: {
-          dark: {
-            after: {
-              contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke,
-                backgroundColor,
-                fontFamily,
-                fontColor,
-                fontSize,
-                fontWeight
-              ),
-            },
-          },
-          light: {
-            after: {
-              contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke,
-                backgroundColor,
-                fontFamily,
-                fontColor,
-                fontSize,
-                fontWeight
-              ),
-            },
-          },
+          dark: renderOptions,
+          light: renderOptions,
         },
       });
 
@@ -495,7 +483,14 @@ export namespace EasyMotion {
   }
 
   export interface SearchOptions {
-    min?: Position; // The minimum bound of the search
-    max?: Position; // The maximum bound of the search
+    /**
+     * The minimum bound of the search
+     */
+    min?: Position;
+
+    /**
+     * The maximum bound of the search
+     */
+    max?: Position;
   }
 }

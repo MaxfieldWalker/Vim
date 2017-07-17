@@ -95,9 +95,8 @@ export class EasyMotion {
       const totalRemainder = Math.max(length - keyTable.length, 0);
       totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-      for (let i = 0; i < Math.min(totalSteps, 26); i++) {
-        keyDepthTable.push(availableKeyTable.pop()!);
-      }
+      Array(Math.min(totalSteps, 26))
+        .forEach(() => keyDepthTable.push(availableKeyTable.pop()!));
     }
 
     let prefix = '';
@@ -118,31 +117,31 @@ export class EasyMotion {
       // Add the key to the prefix
       if (steps > keyDepthTable.length - 1) {
         return null;
+      } else {
+        prefix += keyDepthTable[steps];
+
+        // Check if we're on the last depth level
+        if (steps >= totalSteps) {
+          // Return the proper key for this index
+          return new EasyMotion.Marker(
+            prefix + availableKeyTable[remainder % availableKeyTable.length],
+            markerPosition
+          );
+        } else {
+          // Return the proper index for depths earlier than the last one, including prefix
+          const num =
+            (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
+            availableKeyTable.length;
+          return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
+        }
       }
-
-      prefix += keyDepthTable[steps];
-
-      // Check if we're on the last depth level
-      if (steps >= totalSteps) {
-        // Return the proper key for this index
-        return new EasyMotion.Marker(
-          prefix + availableKeyTable[remainder % availableKeyTable.length],
-          markerPosition
-        );
-      }
-
-      // Return the proper index for depths earlier than the last one, including prefix
-      const num =
-        (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
-        availableKeyTable.length;
-      return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
+    } else {
+      // Return the last key in the marker, including prefix
+      return new EasyMotion.Marker(
+        prefix + availableKeyTable[index % availableKeyTable.length],
+        markerPosition
+      );
     }
-
-    // Return the last key in the marker, including prefix
-    return new EasyMotion.Marker(
-      prefix + availableKeyTable[index % availableKeyTable.length],
-      markerPosition
-    );
   }
 
   /**
@@ -152,20 +151,20 @@ export class EasyMotion {
     const cache = this.decorationTypeCache[length];
     if (cache) {
       return cache;
+    } else {
+      const width = length * 8;
+      const type = vscode.window.createTextEditorDecorationType({
+        after: {
+          margin: `0 0 0 -${width}px`,
+          height: `14px`,
+          width: `${width}px`,
+        },
+      });
+
+      this.decorationTypeCache[length] = type;
+
+      return type;
     }
-
-    const width = length * 8;
-    const type = vscode.window.createTextEditorDecorationType({
-      after: {
-        margin: `0 0 0 -${width}px`,
-        height: `14px`,
-        width: `${width}px`,
-      },
-    });
-
-    this.decorationTypeCache[length] = type;
-
-    return type;
   }
 
   /**
@@ -173,11 +172,11 @@ export class EasyMotion {
    */
   private static getSvgDataUri(
     code: string,
-    backgroundColor: string,
-    fontFamily: string,
-    fontColor: string,
-    fontSize: string,
-    fontWeight: string
+    backgroundColor: string | undefined = 'black',
+    fontFamily: string | undefined = 'Consolas',
+    fontColor: string | undefined = 'white',
+    fontSize: string | undefined = '14',
+    fontWeight: string | undefined = 'normal'
   ): vscode.Uri {
     // Clear cache if the backgroundColor or fontColor has changed
     if (this.cachedBackgroundColor !== backgroundColor) {
@@ -205,37 +204,21 @@ export class EasyMotion {
       this.cachedHeight = height;
     }
 
-    if (fontFamily === undefined) {
-      fontFamily = 'Consolas';
-    }
-    if (fontColor === undefined) {
-      fontColor = 'white';
-    }
-    if (fontSize === undefined) {
-      fontSize = '14';
-    }
-    if (fontWeight === undefined) {
-      fontWeight = 'normal';
-    }
-    if (backgroundColor === undefined) {
-      backgroundColor = 'black';
-    }
-
     const cache = this.svgCache[code];
     if (cache) {
       return cache;
+    } else {
+      const uri = vscode.Uri.parse(
+        `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
+        `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+        `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
+      );
+
+      this.svgCache[code] = uri;
+
+      return uri;
     }
-
-    const uri = vscode.Uri.parse(
-      `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-      `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-      `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-      `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
-    );
-
-    this.svgCache[code] = uri;
-
-    return uri;
   }
 
   /**
@@ -268,15 +251,8 @@ export class EasyMotion {
    * Find markers beginning with a string
    */
   public findMarkers(nail: string, visible = true): EasyMotion.Marker[] {
-    const arr = visible ? this.visibleMarkers : this.markers;
-    const markers: EasyMotion.Marker[] = [];
-    for (const marker of arr) {
-      if (marker.name.startsWith(nail)) {
-        markers.push(marker);
-      }
-    }
-
-    return markers;
+    const markers = visible ? this.visibleMarkers : this.markers;
+    return markers.filter(marker => marker.name.startsWith(nail));
   }
 
   /**
@@ -287,13 +263,9 @@ export class EasyMotion {
     search: string | RegExp = '',
     options: EasyMotion.SearchOptions = {}
   ): EasyMotion.Match[] {
-    let regex: RegExp;
-    if (typeof search === 'string') {
-      // Regex needs to be escaped
-      regex = new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g');
-    } else {
-      regex = search;
-    }
+    const regex = typeof search === 'string'
+      ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
+      : search;
 
     const matches: EasyMotion.Match[] = [];
 
@@ -313,38 +285,32 @@ export class EasyMotion {
       while (result) {
         if (matches.length >= 1000) {
           break outer;
+        } else {
+          const pos = new Position(lineIdx, result.index);
+
+          // Check if match is within bounds
+          if (
+            (options.min && pos.isBefore(options.min)) ||
+            (options.max && pos.isAfter(options.max)) ||
+            Math.abs(pos.line - position.line) > 100
+          ) {
+            // Stop searching after 100 lines in both directions
+            result = regex.exec(line);
+          } else {
+            // Update cursor index to the marker on the right side of the cursor
+            if (!prevMatch || prevMatch.position.isBefore(position)) {
+              cursorIndex = matches.length;
+            }
+            // Matches on the cursor position should be ignored
+            if (pos.isEqual(position)) {
+              result = regex.exec(line);
+            } else {
+              prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
+              matches.push(prevMatch);
+              result = regex.exec(line);
+            }
+          }
         }
-
-        const pos = new Position(lineIdx, result.index);
-
-        // Check if match is within bounds
-        if (
-          (options.min && pos.isBefore(options.min)) ||
-          (options.max && pos.isAfter(options.max)) ||
-          Math.abs(pos.line - position.line) > 100
-        ) {
-          // Stop searching after 100 lines in both directions
-
-          result = regex.exec(line);
-          continue;
-        }
-
-        // Update cursor index to the marker on the right side of the cursor
-        if (!prevMatch || prevMatch.position.isBefore(position)) {
-          cursorIndex = matches.length;
-        }
-
-        prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
-
-        // Matches on the cursor position should be ignored
-        if (pos.isEqual(position)) {
-          result = regex.exec(line);
-          continue;
-        }
-
-        matches.push(prevMatch);
-
-        result = regex.exec(line);
       }
     }
 

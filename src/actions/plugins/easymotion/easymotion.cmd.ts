@@ -40,27 +40,25 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     // Only execute the action if the configuration is set
     if (!Configuration.easymotion) {
       return vimState;
+    } else {
+      // Search all occurences of the character pressed
+      const matches = this.getMatches(position, vimState);
+
+      // Stop if there are no matches
+      if (matches.length === 0) {
+        return vimState;
+      } else {
+        // Enter the EasyMotion mode and await further keys
+        vimState.easyMotion = new EasyMotion();
+        // Store mode to return to after performing easy motion
+        vimState.easyMotion.previousMode = vimState.currentMode;
+        vimState.currentMode = ModeName.EasyMotionMode;
+
+        this.processMarkers(matches, position, vimState);
+
+        return vimState;
+      }
     }
-
-    // Search all occurences of the character pressed
-    const matches = this.getMatches(position, vimState);
-
-    // Stop if there are no matches
-    if (matches.length === 0) {
-      return vimState;
-    }
-
-    // Enter the EasyMotion mode and await further keys
-    vimState.easyMotion = new EasyMotion();
-
-    // Store mode to return to after performing easy motion
-    vimState.easyMotion.previousMode = vimState.currentMode;
-
-    vimState.currentMode = ModeName.EasyMotionMode;
-
-    this.processMarkers(matches, position, vimState);
-
-    return vimState;
   }
 }
 

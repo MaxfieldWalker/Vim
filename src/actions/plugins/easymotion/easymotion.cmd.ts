@@ -9,9 +9,7 @@ import { VimState } from './../../../mode/modeHandler';
 abstract class BaseEasyMotionCommand extends BaseCommand {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    throw new Error('Not implemented!');
-  }
+  public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 
   public getMatchPosition(
     match: EasyMotion.Match,

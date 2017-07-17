@@ -336,17 +336,8 @@ export class EasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
-    const fontFamily = Configuration.easymotionMarkerFontFamily;
-    const fontSize = Configuration.easymotionMarkerFontSize;
-    const fontWeight = Configuration.easymotionMarkerFontWeight;
-    const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
-
-    for (const marker of this.markers) {
-      // Ignore markers that do not start with the accumulated depth level
-      if (!marker.name.startsWith(this.accumulation)) {
-        continue;
-      }
-
+    // Ignore markers that do not start with the accumulated depth level
+    for (const marker of this.markers.filter(m => m.name.startsWith(this.accumulation))) {
       const pos = marker.position;
       // Get keys after the depth we're at
       const keystroke = marker.name.substr(this.accumulation.length);
@@ -360,20 +351,20 @@ export class EasyMotion {
           ? Configuration.easymotionMarkerForegroundColorTwoChar
           : Configuration.easymotionMarkerForegroundColorOneChar;
 
-      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
-      const charPos = pos.character + 1 + (keystroke.length - 1);
       const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         after: {
           contentIconPath: EasyMotion.getSvgDataUri(
             keystroke,
-            backgroundColor,
-            fontFamily,
+            Configuration.easymotionMarkerBackgroundColor,
+            Configuration.easymotionMarkerFontFamily,
             fontColor,
-            fontSize,
-            fontWeight
+            Configuration.easymotionMarkerFontSize,
+            Configuration.easymotionMarkerFontWeight
           ),
         }
       };
+      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
+      const charPos = pos.character + 1 + (keystroke.length - 1);
       this.decorations[keystroke.length].push({
         range: new vscode.Range(pos.line, charPos, pos.line, charPos),
         renderOptions: {

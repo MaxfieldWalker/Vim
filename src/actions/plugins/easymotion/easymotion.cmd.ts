@@ -238,47 +238,46 @@ class MoveEasyMotion extends BaseCommand {
     const key = this.keysPressed[0];
     if (!key) {
       return vimState;
-    }
-
-    // "nail" refers to the accumulated depth keys
-    const nail = vimState.easyMotion.accumulation + key;
-    vimState.easyMotion.accumulation = nail;
-
-    // Find markers starting with "nail"
-    const markers = vimState.easyMotion.findMarkers(nail);
-
-    // If previous mode was visual, restore visual selection
-    if (
-      vimState.easyMotion.previousMode === ModeName.Visual ||
-      vimState.easyMotion.previousMode === ModeName.VisualLine ||
-      vimState.easyMotion.previousMode === ModeName.VisualBlock
-    ) {
-      vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
-      vimState.cursorPosition = vimState.lastVisualSelectionEnd;
-    }
-
-    if (markers.length === 1) {
-      // Only one found, navigate to it
-      const marker = markers[0];
-
-      vimState.easyMotion.clearDecorations();
-      // Restore the mode from before easy motion
-      vimState.currentMode = vimState.easyMotion.previousMode;
-
-      // Set cursor position based on marker entered
-      vimState.cursorPosition = marker.position;
-
-      return vimState;
     } else {
-      if (markers.length === 0) {
-        // None found, exit mode
+      // "nail" refers to the accumulated depth keys
+      const nail = vimState.easyMotion.accumulation + key;
+      vimState.easyMotion.accumulation = nail;
+
+      // Find markers starting with "nail"
+      const markers = vimState.easyMotion.findMarkers(nail);
+
+      // If previous mode was visual, restore visual selection
+      if (
+        vimState.easyMotion.previousMode === ModeName.Visual ||
+        vimState.easyMotion.previousMode === ModeName.VisualLine ||
+        vimState.easyMotion.previousMode === ModeName.VisualBlock
+      ) {
+        vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
+        vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+      }
+
+      if (markers.length === 1) {
+        // Only one found, navigate to it
+        const marker = markers[0];
+
         vimState.easyMotion.clearDecorations();
+        // Restore the mode from before easy motion
         vimState.currentMode = vimState.easyMotion.previousMode;
 
+        // Set cursor position based on marker entered
+        vimState.cursorPosition = marker.position;
+
         return vimState;
+      } else {
+        if (markers.length === 0) {
+          // None found, exit mode
+          vimState.easyMotion.clearDecorations();
+          vimState.currentMode = vimState.easyMotion.previousMode;
+          return vimState;
+        } else {
+          return vimState;
+        }
       }
     }
-
-    return vimState;
   }
 }

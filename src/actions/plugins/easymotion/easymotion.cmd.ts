@@ -7,6 +7,8 @@ import { RegisterAction } from './../../base';
 import { VimState } from './../../../mode/modeHandler';
 
 abstract class BaseEasyMotionCommand extends BaseCommand {
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     throw new Error('Not implemented!');
   }
@@ -72,7 +74,6 @@ function createCommandKeys(command: { trigger: string[], useChar: boolean }) {
 
 @RegisterAction
 class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['s'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -90,7 +91,6 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['f'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -112,7 +112,6 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['F'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -134,7 +133,6 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['t'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -164,7 +162,6 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['T'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -194,7 +191,6 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['w'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -207,7 +203,6 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['e'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -228,7 +223,6 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['g', 'e'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -249,7 +243,6 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['b'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -262,7 +255,6 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['j'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -280,7 +272,6 @@ class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = createCommandKeys({ trigger: ['k'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {

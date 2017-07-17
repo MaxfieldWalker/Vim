@@ -64,10 +64,16 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
   }
 }
 
+function createCommandKeys(command: { trigger: string[], useChar: boolean }) {
+  return command.useChar
+    ? ['<leader>', '<leader>', ...command.trigger, '<character>']
+    : ['<leader>', '<leader>', ...command.trigger];
+}
+
 @RegisterAction
 class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 's', '<character>'];
+  keys = createCommandKeys({ trigger: ['s'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -85,7 +91,7 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'f', '<character>'];
+  keys = createCommandKeys({ trigger: ['f'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -107,7 +113,7 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'F', '<character>'];
+  keys = createCommandKeys({ trigger: ['F'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -129,7 +135,7 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 't', '<character>'];
+  keys = createCommandKeys({ trigger: ['t'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -159,7 +165,7 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'T', '<character>'];
+  keys = createCommandKeys({ trigger: ['T'], useChar: true });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -189,7 +195,7 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'w'];
+  keys = createCommandKeys({ trigger: ['w'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words after the cursor
@@ -202,7 +208,7 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'e'];
+  keys = createCommandKeys({ trigger: ['e'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the end of all words after the cursor
@@ -223,7 +229,7 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'g', 'e'];
+  keys = createCommandKeys({ trigger: ['g', 'e'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
@@ -244,7 +250,7 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'b'];
+  keys = createCommandKeys({ trigger: ['b'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
@@ -257,7 +263,7 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'j'];
+  keys = createCommandKeys({ trigger: ['j'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line after the cursor
@@ -275,7 +281,7 @@ class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', 'k'];
+  keys = createCommandKeys({ trigger: ['k'], useChar: false });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor

@@ -350,21 +350,15 @@ export class EasyMotion {
 
     // Sort by the index distance from the cursor index
     matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
-      const diffA = cursorIndex - a.index;
-      const diffB = cursorIndex - b.index;
-
-      let absDiffA = Math.abs(diffA);
-      let absDiffB = Math.abs(diffB);
-
-      // Prioritize the matches on the right side of the cursor index
-      if (a.index < cursorIndex) {
-        absDiffA -= 0.5;
-      }
-      if (b.index < cursorIndex) {
-        absDiffB -= 0.5;
-      }
-
+      const absDiffA = computeAboluteDiff(a.index);
+      const absDiffB = computeAboluteDiff(b.index);
       return absDiffA - absDiffB;
+
+      function computeAboluteDiff(matchIndex: number) {
+        const absDiff = Math.abs(cursorIndex - matchIndex);
+        // Prioritize the matches on the right side of the cursor index
+        return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
+      }
     });
 
     return matches;

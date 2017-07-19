@@ -103,48 +103,68 @@ function getMatchesForLineStart(position: Position, vimState: VimState, options?
 }
 
 
-@RegisterAction
-class ActionEasyMotionTwoCharSearchCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['s'], charCount: 1 });
+abstract class SearchByCharCommand extends BaseEasyMotionCommand {
+  private _trigger: string;
+  private _charCount: number;
+
+  constructor(trigger: string, charCount: number) {
+    super();
+    this._trigger = trigger;
+    this._charCount = charCount;
+    this.keys = createCommandKeys({ trigger: trigger.split(''), charCount });
+  }
+
+  get searchChar() {
+    return this.keysPressed.join('').substr(2 + this._trigger.length);
+  }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3]);
+    return getMatchesForChar(position, vimState, this.searchChar, this.searchOptions(position));
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return {};
   }
 }
 
 @RegisterAction
-class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['s'], charCount: 1 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3]);
+class ActionEasyMotionTwoCharSearchCommand extends SearchByCharCommand {
+  constructor() {
+    super('2s', 2);
   }
 }
 
 @RegisterAction
-class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['f'], charCount: 1 });
+class ActionEasyMotionTwoCharFindForwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('2f', 2);
+  }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3], { min: position });
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { min: position };
   }
 }
 
 @RegisterAction
-class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['F'], charCount: 1 });
+class ActionEasyMotionTwoCharFindBackwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('2F', 2);
+  }
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3], { max: position });
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { max: position };
   }
 }
 
-@RegisterAction
-class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['t'], charCount: 1 });
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3], { min: position });
+@RegisterAction
+class ActionEasyMotionTwoCharTilForwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('2t', 2);
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { min: position };
   }
 
   public getMatchPosition(
@@ -157,11 +177,81 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 }
 
 @RegisterAction
-class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['T'], charCount: 1 });
+class ActionEasyMotionTwoCharTilBackwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('2T', 2);
+  };
 
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.keysPressed[3], { max: position });
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { max: position };
+  }
+
+  public getMatchPosition(
+    match: EasyMotion.Match,
+    position: Position,
+    vimState: VimState
+  ): Position {
+    return new Position(match.position.line, Math.max(0, match.position.character + 2));
+  }
+}
+
+
+@RegisterAction
+class ActionEasyMotionSearchCommand extends SearchByCharCommand {
+  constructor() {
+    super('s', 1);
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionFindForwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('f', 1);
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { min: position };
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionFindBackwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('F', 1);
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { max: position };
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionTilForwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('t', 1);
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { min: position };
+  }
+
+  public getMatchPosition(
+    match: EasyMotion.Match,
+    position: Position,
+    vimState: VimState
+  ): Position {
+    return new Position(match.position.line, Math.max(0, match.position.character - 1));
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionTilBackwardCommand extends SearchByCharCommand {
+  constructor() {
+    super('T', 1);
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    return { max: position };
   }
 
   public getMatchPosition(

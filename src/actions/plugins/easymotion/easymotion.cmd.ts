@@ -86,7 +86,9 @@ function getMatchesForChar(
     // Searching for space should only find the first space
     return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
   } else {
-    return vimState.easyMotion.sortedSearch(position, searchChar, options);
+    const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchChar));
+    const regexFlags = ignorecase ? 'gi' : 'g';
+    return vimState.easyMotion.sortedSearch(position, new RegExp(searchChar, regexFlags), options);
   }
 }
 

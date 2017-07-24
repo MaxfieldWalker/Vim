@@ -1959,7 +1959,10 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
-      currentCommandText = `${this.vimState.globalState.searchState!.searchString!}`;
+      const state = this.vimState.easyMotion;
+      if (state) {
+        currentCommandText = state.searchStringAccumulation!;
+      }
     }
 
     if (this._vimState.currentMode === ModeName.SurroundInputMode) {

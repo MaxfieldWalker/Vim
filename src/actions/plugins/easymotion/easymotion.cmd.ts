@@ -107,8 +107,13 @@ function getMatchesForLineStart(position: Position, vimState: VimState, options?
   return matches;
 }
 
+export interface AfterSearchStringInputAction {
+  shouldFire(): boolean;
+  updateSearchString(s: string): void;
+  fire(position: Position, vimState: VimState): Promise<VimState>;
+}
 
-export class SearchByCharCommand extends BaseEasyMotionCommand {
+export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
   private _charCount: number;
   private _searchString: string;
 
@@ -135,13 +140,17 @@ export class SearchByCharCommand extends BaseEasyMotionCommand {
   public shouldFire() {
     return this._searchString.length >= this._charCount;
   }
+
+  public fire(position: Position, vimState: VimState) {
+    return this.exec(position, vimState);
+  }
 }
 
 class RegisterSearchByCharCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  private _command: SearchByCharCommand;
+  private _command: AfterSearchStringInputAction;
 
-  constructor(trigger: string, command: SearchByCharCommand) {
+  constructor(trigger: string, command: AfterSearchStringInputAction) {
     super();
     this._command = command;
     this.keys = ['<leader>', '<leader>', ...trigger.split('')];
@@ -347,24 +356,6 @@ class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
 }
 
 
-@RegisterAction
-class EasyMotionNCharSearchCommand extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ['<leader>', '<leader>', '/'];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(
-      SearchDirection.Forward,
-      vimState.cursorPosition,
-      '',
-      { isRegex: true },
-      vimState.currentMode
-    );
-    vimState.currentMode = ModeName.EasyMotionInputMode;
-    vimState.globalState.hl = true;
-    return vimState;
-  }
-}
 
 @RegisterAction
 class EasyMotionNCharInputMode extends BaseCommand {
@@ -380,19 +371,6 @@ class EasyMotionNCharInputMode extends BaseCommand {
         searchState.searchString = searchString.slice(0, -1);
       }
       vimState.easyMotion.searchStringAccumulation = searchString.slice(0, -1);
-    } else if (key === '\n') {
-      const previousMode = vimState.globalState.searchState!.previousMode;
-      vimState.globalState.searchState = undefined;
-
-      if (searchString === '') {
-        vimState.currentMode = previousMode;
-      } else {
-        // Skip EasyMotionInput mode to make sure to keep the previous mode
-        vimState.currentMode = previousMode;
-        const cmd = new SearchByNCharCommand(searchString);
-        const state = await cmd.exec(vimState.cursorPosition, vimState);
-        return state;
-      }
     } else {
       if (searchState) {
         searchState.searchString += key;
@@ -402,11 +380,10 @@ class EasyMotionNCharInputMode extends BaseCommand {
     const s = searchString + key;
     const cmd = vimState.easyMotion.command;
     cmd.updateSearchString(s);
-    if (vimState.easyMotion.command.shouldFire()) {
-      // 遷移する
+    if (cmd.shouldFire()) {
+      // Skip Easymotion input mode to make sure not to back to it
       vimState.currentMode = vimState.easyMotion.previousMode;
-      cmd.updateSearchString(s);
-      const state = await vimState.easyMotion.command.exec(vimState.cursorPosition, vimState);
+      const state = await cmd.fire(vimState.cursorPosition, vimState);
       return state;
     }
     return vimState;
@@ -425,16 +402,50 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
   }
 }
 
-class SearchByNCharCommand extends BaseEasyMotionCommand {
+class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
   private _searchString: string;
 
-  constructor(searchString: string) {
-    super();
-    this._searchString = searchString;
+  constructor() { super(); }
+
+  public updateSearchString(s: string) {
+    this._searchString = s;
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this._searchString, {});
+    return getMatchesForChar(position, vimState, this.removeTrailingLineBreak(this._searchString), {});
+  }
+
+  private removeTrailingLineBreak(s: string) {
+    return s.replace(new RegExp("\n+$", "g"), "");
+  }
+
+  public shouldFire() {
+    // Fire if <CR> typed
+    return this._searchString.endsWith("\n");
+  }
+
+  public async fire(position: Position, vimState: VimState) {
+    if (this.removeTrailingLineBreak(this._searchString) === '') {
+      return vimState;
+    } else {
+      return this.exec(position, vimState);
+    }
+  }
+}
+@RegisterAction
+class EasyMotionNCharSearchCommand extends RegisterSearchByCharCommand {
+  constructor() { super('/', new SearchByNCharCommand()); }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.globalState.searchState = new SearchState(
+      SearchDirection.Forward,
+      vimState.cursorPosition,
+      '',
+      { isRegex: true },
+      vimState.currentMode
+    );
+    vimState.globalState.hl = true;
+    return super.exec(position, vimState);
   }
 }
 

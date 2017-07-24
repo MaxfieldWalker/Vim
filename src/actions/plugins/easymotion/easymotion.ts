@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { SearchByCharCommand } from "./easymotion.cmd";
+import { AfterSearchStringInputAction } from "./easymotion.cmd";
 
 export class EasyMotion {
   /**
@@ -11,7 +11,7 @@ export class EasyMotion {
   public accumulation = '';
 
   public searchStringAccumulation = '';
-  public command: SearchByCharCommand;
+  public command: AfterSearchStringInputAction;
 
   /**
    * Array of all markers and decorations

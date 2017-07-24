@@ -8,18 +8,11 @@ import { VimState } from './../../../mode/modeHandler';
 import { SearchState, SearchDirection } from './../../../state/searchState';
 
 
-export abstract class BaseEasyMotionCommand extends BaseCommand {
+abstract class BaseEasyMotionCommand extends BaseCommand {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  protected _searchString: string;
 
   public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
-  public shouldFire(searchString: string): boolean {
-    return true;
-  }
 
-  public updateSearchString(s: string) {
-    this._searchString = s;
-  }
 
   public getMatchPosition(
     match: EasyMotion.Match,
@@ -115,8 +108,9 @@ function getMatchesForLineStart(position: Position, vimState: VimState, options?
 }
 
 
-class SearchByCharCommand extends BaseEasyMotionCommand {
+export class SearchByCharCommand extends BaseEasyMotionCommand {
   private _charCount: number;
+  private _searchString: string;
 
   constructor(charCount: number) {
     super();
@@ -131,16 +125,25 @@ class SearchByCharCommand extends BaseEasyMotionCommand {
     return {};
   }
 
-  public shouldFire(searchString: string) {
-    return searchString.length >= this._charCount;
+  public updateSearchString(s: string) {
+    this._searchString = s;
+  }
+
+  /**
+   * True if it should go to Easymotion mode
+   */
+  public shouldFire() {
+    return this._searchString.length >= this._charCount;
   }
 }
 
-class MyBaseCommand extends BaseCommand {
+class RegisterSearchByCharCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  private _command: SearchByCharCommand;
 
-  constructor(trigger: string, private _command: BaseEasyMotionCommand) {
+  constructor(trigger: string, command: SearchByCharCommand) {
     super();
+    this._command = command;
     this.keys = ['<leader>', '<leader>', ...trigger.split('')];
   }
 
@@ -153,49 +156,32 @@ class MyBaseCommand extends BaseCommand {
     return vimState;
   }
 }
+
 @RegisterAction
-class MyCommand1 extends MyBaseCommand {
-  constructor() {
-    super('2s', new SearchByCharCommand(2));
-  }
-}
+class Easymotion2s extends RegisterSearchByCharCommand { constructor() { super('2s', new SearchByCharCommand(2)); } }
 
 class ActionEasyMotionTwoCharFindForwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(2);
-  }
+  constructor() { super(2); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { min: position };
   }
 }
 @RegisterAction
-class MyCommand2 extends MyBaseCommand {
-  constructor() {
-    super('2f', new ActionEasyMotionTwoCharFindForwardCommand());
-  }
-}
+class EasyMotion2f extends RegisterSearchByCharCommand { constructor() { super('2f', new ActionEasyMotionTwoCharFindForwardCommand()); } }
 
 class ActionEasyMotionTwoCharFindBackwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(2);
-  }
+  constructor() { super(2); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { max: position };
   }
 }
 @RegisterAction
-class MyCommand3 extends MyBaseCommand {
-  constructor() {
-    super('2F', new ActionEasyMotionTwoCharFindBackwardCommand());
-  }
-}
+class Easymotion2F extends RegisterSearchByCharCommand { constructor() { super('2F', new ActionEasyMotionTwoCharFindBackwardCommand()); } }
 
 class ActionEasyMotionTwoCharTilForwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(2);
-  }
+  constructor() { super(2); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { min: position };
@@ -210,16 +196,10 @@ class ActionEasyMotionTwoCharTilForwardCommand extends SearchByCharCommand {
   }
 }
 @RegisterAction
-class MyCommand4 extends MyBaseCommand {
-  constructor() {
-    super('2t', new ActionEasyMotionTwoCharTilForwardCommand());
-  }
-}
+class Easymotion2t extends RegisterSearchByCharCommand { constructor() { super('2t', new ActionEasyMotionTwoCharTilForwardCommand()); } }
 
 class ActionEasyMotionTwoCharTilBackwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(2);
-  };
+  constructor() { super(2); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { max: position };
@@ -234,55 +214,33 @@ class ActionEasyMotionTwoCharTilBackwardCommand extends SearchByCharCommand {
   }
 }
 @RegisterAction
-class MyCommand5 extends MyBaseCommand {
-  constructor() {
-    super('2T', new ActionEasyMotionTwoCharTilBackwardCommand());
-  }
-}
+class Easymotion2T extends RegisterSearchByCharCommand { constructor() { super('2T', new ActionEasyMotionTwoCharTilBackwardCommand()); } }
 
 @RegisterAction
-class MyCommand6 extends MyBaseCommand {
-  constructor() {
-    super('s', new SearchByCharCommand(1));
-  }
-}
+class Easymotions extends RegisterSearchByCharCommand { constructor() { super('s', new SearchByCharCommand(1)); } }
 
 class ActionEasyMotionFindForwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(1);
-  }
+  constructor() { super(1); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { min: position };
   }
 }
 @RegisterAction
-class MyCommand7 extends MyBaseCommand {
-  constructor() {
-    super('f', new ActionEasyMotionFindForwardCommand());
-  }
-}
+class Easymotionf extends RegisterSearchByCharCommand { constructor() { super('f', new ActionEasyMotionFindForwardCommand()); } }
 
 class ActionEasyMotionFindBackwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(1);
-  }
+  constructor() { super(1); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { max: position };
   }
 }
 @RegisterAction
-class MyCommand8 extends MyBaseCommand {
-  constructor() {
-    super('F', new ActionEasyMotionFindBackwardCommand());
-  }
-}
+class EasymotionF extends RegisterSearchByCharCommand { constructor() { super('F', new ActionEasyMotionFindBackwardCommand()); } }
 
 class ActionEasyMotionTilForwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(1);
-  }
+  constructor() { super(1); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { min: position };
@@ -297,15 +255,10 @@ class ActionEasyMotionTilForwardCommand extends SearchByCharCommand {
   }
 }
 @RegisterAction
-class MyCommand9 extends MyBaseCommand {
-  constructor() {
-    super('t', new ActionEasyMotionTilForwardCommand());
-  }
-}
+class Easymotiont extends RegisterSearchByCharCommand { constructor() { super('t', new ActionEasyMotionTilForwardCommand()); } }
+
 class ActionEasyMotionTilBackwardCommand extends SearchByCharCommand {
-  constructor() {
-    super(1);
-  }
+  constructor() { super(1); }
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     return { max: position };
@@ -320,11 +273,7 @@ class ActionEasyMotionTilBackwardCommand extends SearchByCharCommand {
   }
 }
 @RegisterAction
-class MyCommand10 extends MyBaseCommand {
-  constructor() {
-    super('T', new ActionEasyMotionTilBackwardCommand());
-  }
-}
+class EasymotionT extends RegisterSearchByCharCommand { constructor() { super('T', new ActionEasyMotionTilBackwardCommand()); } }
 
 
 @RegisterAction
@@ -451,10 +400,11 @@ class EasyMotionNCharInputMode extends BaseCommand {
       vimState.easyMotion.searchStringAccumulation += key;
     }
     const s = searchString + key;
-    if (vimState.easyMotion.command.shouldFire(s)) {
+    const cmd = vimState.easyMotion.command;
+    cmd.updateSearchString(s);
+    if (vimState.easyMotion.command.shouldFire()) {
       // 遷移する
       vimState.currentMode = vimState.easyMotion.previousMode;
-      const cmd = vimState.easyMotion.command;
       cmd.updateSearchString(s);
       const state = await vimState.easyMotion.command.exec(vimState.cursorPosition, vimState);
       return state;
@@ -476,6 +426,8 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
 }
 
 class SearchByNCharCommand extends BaseEasyMotionCommand {
+  private _searchString: string;
+
   constructor(searchString: string) {
     super();
     this._searchString = searchString;

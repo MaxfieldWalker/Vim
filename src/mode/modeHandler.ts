@@ -507,6 +507,7 @@ export class ModeHandler implements vscode.Disposable {
   });
 
   private _searchHighlightDecoration: vscode.TextEditorDecorationType;
+  private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;
@@ -553,6 +554,10 @@ export class ModeHandler implements vscode.Disposable {
 
     this._searchHighlightDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: Configuration.searchHighlightColor,
+    });
+
+    this._easymotionHighlightDecoration = vscode.window.createTextEditorDecorationType({
+      backgroundColor: Configuration.searchHighlightColor
     });
 
     this.setCurrentModeByName(this._vimState);
@@ -1894,7 +1899,7 @@ export class ModeHandler implements vscode.Disposable {
         matchRanges.push.apply(matchRanges, searchState.matchRanges);
       }
     }
-    this.vimState.editor.setDecorations(this._searchHighlightDecoration, matchRanges);
+    this.vimState.editor.setDecorations(this._easymotionHighlightDecoration, matchRanges);
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];

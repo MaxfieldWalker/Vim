@@ -220,22 +220,14 @@ class EasyMotionNCharInputMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    const searchState = vimState.globalState.searchState;
     const searchString = vimState.easyMotion.searchStringAccumulation;
     if (key === '<BS>' || key === '<shift+BS>') {
-      if (searchState) {
-        searchState.searchString = searchString.slice(0, -1);
-      }
       vimState.easyMotion.searchStringAccumulation = searchString.slice(0, -1);
     } else {
-      if (searchState) {
-        searchState.searchString += key;
-      }
       vimState.easyMotion.searchStringAccumulation += key;
     }
-    const s = searchString + key;
     const cmd = vimState.easyMotion.command;
-    cmd.updateSearchString(s);
+    cmd.updateSearchString(vimState.easyMotion.searchStringAccumulation);
     if (cmd.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it
       vimState.currentMode = vimState.easyMotion.previousMode;
@@ -253,7 +245,6 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
-    vimState.globalState.searchState = undefined;
     return vimState;
   }
 }
@@ -294,13 +285,6 @@ class EasyMotionNCharSearchCommand extends EasyMotionCharMoveActionBase {
   constructor() { super('/', new SearchByNCharCommand()); }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(
-      SearchDirection.Forward,
-      vimState.cursorPosition,
-      '',
-      { isRegex: true },
-      vimState.currentMode
-    );
     vimState.globalState.hl = true;
     return super.exec(position, vimState);
   }

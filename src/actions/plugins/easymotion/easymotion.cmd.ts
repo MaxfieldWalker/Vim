@@ -87,35 +87,25 @@ function getMatchesForChar(
   vimState: VimState,
   searchChar: string,
   options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
-  // Search all occurences of the character pressed
-  if (searchChar === ' ') {
-    // Searching for space should only find the first space
-    return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
-  } else {
-    const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchChar));
-    const regexFlags = ignorecase ? 'gi' : 'g';
-    return vimState.easyMotion.sortedSearch(position, new RegExp(searchChar, regexFlags), options);
+  switch (searchChar) {
+    case '':
+      return [];
+    case ' ':
+      // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
+    default:
+      // Search all occurences of the character pressed
+      const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchChar));
+      const regexFlags = ignorecase ? 'gi' : 'g';
+      return vimState.easyMotion.sortedSearch(position, new RegExp(searchChar, regexFlags), options);
   }
-}
-
-function getMatchesForWord(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
-  // Search for the beginning of all words after the cursor
-  return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
-}
-
-function getMatchesForLineStart(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
-  // Search for the beginning of all non whitespace chars on each line before the cursor
-  const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
-  for (const match of matches) {
-    match.position = match.position.getFirstLineNonBlankChar();
-  }
-  return matches;
 }
 
 export interface AfterSearchStringInputAction {
   shouldFire(): boolean;
   updateSearchString(s: string): void;
   fire(position: Position, vimState: VimState): Promise<VimState>;
+  getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
@@ -184,7 +174,7 @@ export class EasyMotionWordMoveActionBase extends BaseEasyMotionCommand {
     this.keys = ['<leader>', '<leader>', ...trigger.split('')];
   }
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForWord(position, vimState, this.searchOptions(position));
+    return this.getMatchesForWord(position, vimState, this.searchOptions(position));
   }
 
   public getMatchPosition(match: EasyMotion.Match): Position {
@@ -196,6 +186,11 @@ export class EasyMotionWordMoveActionBase extends BaseEasyMotionCommand {
         return match.position;
     }
   }
+
+  private getMatchesForWord(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
+    // Search for the beginning of all words after the cursor
+    return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
+  }
 }
 
 export class EasyMotionLineMoveActionBase extends BaseEasyMotionCommand {
@@ -205,7 +200,16 @@ export class EasyMotionLineMoveActionBase extends BaseEasyMotionCommand {
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForLineStart(position, vimState, this.searchOptions(position));
+    return this.getMatchesForLineStart(position, vimState, this.searchOptions(position));
+  }
+
+  private getMatchesForLineStart(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
+    // Search for the beginning of all non whitespace chars on each line before the cursor
+    const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
+    for (const match of matches) {
+      match.position = match.position.getFirstLineNonBlankChar();
+    }
+    return matches;
   }
 }
 
@@ -255,7 +259,7 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
 }
 
 class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
-  private _searchString: string;
+  private _searchString: string = '';
 
   constructor() { super({}); }
 
@@ -272,7 +276,7 @@ class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchS
   }
 
   public shouldFire() {
-    // Fire if <CR> typed
+    // Fire when <CR> typed
     return this._searchString.endsWith("\n");
   }
 

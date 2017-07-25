@@ -439,6 +439,10 @@ export namespace EasyMotion {
     public set position(position: Position) {
       this._position = position;
     }
+
+    public toRange(): vscode.Range {
+      return new vscode.Range(this.position, this.position.translate(0, this.text.length));
+    }
   }
 
   export interface SearchOptions {

@@ -6,6 +6,7 @@ import { BaseCommand } from './../../commands/actions';
 import { RegisterAction } from './../../base';
 import { VimState } from './../../../mode/modeHandler';
 import { SearchState, SearchDirection } from './../../../state/searchState';
+import { EasyMotionMoveOptionsBase, EasyMotionWordMoveOpions, EasyMotionCharMoveOpions } from "./types";
 
 
 abstract class BaseEasyMotionCommand extends BaseCommand {
@@ -13,12 +14,11 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 
+  constructor(private _baseOptions: EasyMotionMoveOptionsBase) {
+    super();
+  }
 
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
+  public getMatchPosition(match: EasyMotion.Match): Position {
     return match.position;
   }
 
@@ -28,7 +28,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
     let index = 0;
     for (const match of matches) {
-      const pos = this.getMatchPosition(match, position, vimState);
+      const pos = this.getMatchPosition(match);
 
       if (!match.position.isEqual(position)) {
         const marker = EasyMotion.generateMarker(index++, matches.length, position, pos);
@@ -36,6 +36,15 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
           vimState.easyMotion.addMarker(marker);
         }
       }
+    }
+  }
+
+  protected searchOptions(position: Position): EasyMotion.SearchOptions {
+    const pos = this._baseOptions.searchOptions;
+    switch (pos) {
+      case "min": return { min: position };
+      case "max": return { max: position };
+      default: return {};
     }
   }
 
@@ -71,10 +80,6 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       }
     }
   }
-}
-
-function createCommandKeys(command: { trigger: string[], charCount: number }): string[] {
-  return ['<leader>', '<leader>', ...command.trigger, ...Array(command.charCount).fill('<character>')];
 }
 
 function getMatchesForChar(
@@ -114,20 +119,14 @@ export interface AfterSearchStringInputAction {
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
-  private _charCount: number;
   private _searchString: string;
 
-  constructor(charCount: number) {
-    super();
-    this._charCount = charCount;
+  constructor(private _options: EasyMotionCharMoveOpions = { charCount: 1 }) {
+    super(_options);
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     return getMatchesForChar(position, vimState, this._searchString, this.searchOptions(position));
-  }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return {};
   }
 
   public updateSearchString(s: string) {
@@ -138,15 +137,28 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterS
    * True if it should go to Easymotion mode
    */
   public shouldFire() {
-    return this._searchString.length >= this._charCount;
+    const charCount = this._options.charCount;
+    return charCount ? this._searchString.length >= charCount : true;
   }
 
   public fire(position: Position, vimState: VimState) {
     return this.exec(position, vimState);
   }
+
+  public getMatchPosition(match: EasyMotion.Match): Position {
+    const { line, character } = match.position;
+    switch (this._options.labelPosition) {
+      case "after":
+        return new Position(line, character + this._options.charCount);
+      case "before":
+        return new Position(line, Math.max(0, character - this._options.charCount));
+      default:
+        return match.position;
+    }
+  }
 }
 
-class RegisterSearchByCharCommand extends BaseCommand {
+export class EasyMotionCharMoveActionBase extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   private _command: AfterSearchStringInputAction;
 
@@ -166,196 +178,36 @@ class RegisterSearchByCharCommand extends BaseCommand {
   }
 }
 
-@RegisterAction
-class Easymotion2s extends RegisterSearchByCharCommand { constructor() { super('2s', new SearchByCharCommand(2)); } }
+export class EasyMotionWordMoveActionBase extends BaseEasyMotionCommand {
+  constructor(trigger: string, private _options: EasyMotionWordMoveOpions = {}) {
+    super(_options);
+    this.keys = ['<leader>', '<leader>', ...trigger.split('')];
+  }
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    return getMatchesForWord(position, vimState, this.searchOptions(position));
+  }
 
-class ActionEasyMotionTwoCharFindForwardCommand extends SearchByCharCommand {
-  constructor() { super(2); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { min: position };
+  public getMatchPosition(match: EasyMotion.Match): Position {
+    const { line, character } = match.position;
+    switch (this._options.labelPosition) {
+      case "after":
+        return new Position(line, character + match.text.length - 1);
+      default:
+        return match.position;
+    }
   }
 }
-@RegisterAction
-class EasyMotion2f extends RegisterSearchByCharCommand { constructor() { super('2f', new ActionEasyMotionTwoCharFindForwardCommand()); } }
 
-class ActionEasyMotionTwoCharFindBackwardCommand extends SearchByCharCommand {
-  constructor() { super(2); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { max: position };
+export class EasyMotionLineMoveActionBase extends BaseEasyMotionCommand {
+  constructor(trigger: string, private _options: EasyMotionMoveOptionsBase = {}) {
+    super(_options);
+    this.keys = ['<leader>', '<leader>', ...trigger.split('')];
   }
-}
-@RegisterAction
-class Easymotion2F extends RegisterSearchByCharCommand { constructor() { super('2F', new ActionEasyMotionTwoCharFindBackwardCommand()); } }
-
-class ActionEasyMotionTwoCharTilForwardCommand extends SearchByCharCommand {
-  constructor() { super(2); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { min: position };
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, Math.max(0, match.position.character - 1));
-  }
-}
-@RegisterAction
-class Easymotion2t extends RegisterSearchByCharCommand { constructor() { super('2t', new ActionEasyMotionTwoCharTilForwardCommand()); } }
-
-class ActionEasyMotionTwoCharTilBackwardCommand extends SearchByCharCommand {
-  constructor() { super(2); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { max: position };
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, Math.max(0, match.position.character + 2));
-  }
-}
-@RegisterAction
-class Easymotion2T extends RegisterSearchByCharCommand { constructor() { super('2T', new ActionEasyMotionTwoCharTilBackwardCommand()); } }
-
-@RegisterAction
-class Easymotions extends RegisterSearchByCharCommand { constructor() { super('s', new SearchByCharCommand(1)); } }
-
-class ActionEasyMotionFindForwardCommand extends SearchByCharCommand {
-  constructor() { super(1); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { min: position };
-  }
-}
-@RegisterAction
-class Easymotionf extends RegisterSearchByCharCommand { constructor() { super('f', new ActionEasyMotionFindForwardCommand()); } }
-
-class ActionEasyMotionFindBackwardCommand extends SearchByCharCommand {
-  constructor() { super(1); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { max: position };
-  }
-}
-@RegisterAction
-class EasymotionF extends RegisterSearchByCharCommand { constructor() { super('F', new ActionEasyMotionFindBackwardCommand()); } }
-
-class ActionEasyMotionTilForwardCommand extends SearchByCharCommand {
-  constructor() { super(1); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { min: position };
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, Math.max(0, match.position.character - 1));
-  }
-}
-@RegisterAction
-class Easymotiont extends RegisterSearchByCharCommand { constructor() { super('t', new ActionEasyMotionTilForwardCommand()); } }
-
-class ActionEasyMotionTilBackwardCommand extends SearchByCharCommand {
-  constructor() { super(1); }
-
-  protected searchOptions(position: Position): EasyMotion.SearchOptions {
-    return { max: position };
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, Math.max(0, match.position.character + 1));
-  }
-}
-@RegisterAction
-class EasymotionT extends RegisterSearchByCharCommand { constructor() { super('T', new ActionEasyMotionTilBackwardCommand()); } }
-
-
-@RegisterAction
-class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['w'], charCount: 0 });
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForWord(position, vimState, { min: position });
+    return getMatchesForLineStart(position, vimState, this.searchOptions(position));
   }
 }
-
-@RegisterAction
-class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['e'], charCount: 0 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForWord(position, vimState, { min: position });
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, match.position.character + match.text.length - 1);
-  }
-}
-
-@RegisterAction
-class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['g', 'e'], charCount: 0 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForWord(position, vimState, { max: position });
-  }
-
-  public getMatchPosition(
-    match: EasyMotion.Match,
-    position: Position,
-    vimState: VimState
-  ): Position {
-    return new Position(match.position.line, match.position.character + match.text.length - 1);
-  }
-}
-
-@RegisterAction
-class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['b'], charCount: 0 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForWord(position, vimState, { max: position });
-  }
-}
-
-@RegisterAction
-class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['j'], charCount: 0 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForLineStart(position, vimState, { min: position });
-  }
-}
-
-@RegisterAction
-class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
-  keys = createCommandKeys({ trigger: ['k'], charCount: 0 });
-
-  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForLineStart(position, vimState, { max: position });
-  }
-}
-
-
 
 @RegisterAction
 class EasyMotionNCharInputMode extends BaseCommand {
@@ -405,7 +257,7 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
 class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
   private _searchString: string;
 
-  constructor() { super(); }
+  constructor() { super({}); }
 
   public updateSearchString(s: string) {
     this._searchString = s;
@@ -432,8 +284,9 @@ class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchS
     }
   }
 }
+
 @RegisterAction
-class EasyMotionNCharSearchCommand extends RegisterSearchByCharCommand {
+class EasyMotionNCharSearchCommand extends EasyMotionCharMoveActionBase {
   constructor() { super('/', new SearchByNCharCommand()); }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {

@@ -109,7 +109,7 @@ export interface AfterSearchStringInputAction {
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
-  private _searchString: string;
+  private _searchString: string = '';
 
   constructor(private _options: EasyMotionCharMoveOpions = { charCount: 1 }) {
     super(_options);

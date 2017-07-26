@@ -1893,7 +1893,7 @@ export class ModeHandler implements vscode.Disposable {
     this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
     const easyMotionHighlightRanges = this.currentMode.name === ModeName.EasyMotionInputMode
-      ? vimState.easyMotion.command.getMatches(vimState.cursorPosition, vimState).map(x => x.toRange())
+      ? vimState.easyMotion.searchAction.getMatches(vimState.cursorPosition, vimState).map(x => x.toRange())
       : [];
     this.vimState.editor.setDecorations(this._easymotionHighlightDecoration, easyMotionHighlightRanges);
 
@@ -1957,7 +1957,7 @@ export class ModeHandler implements vscode.Disposable {
     if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
       const state = this.vimState.easyMotion;
       if (state) {
-        currentCommandText = state.searchStringAccumulation!;
+        currentCommandText = state.searchAction.getSearchString();
       }
     }
 

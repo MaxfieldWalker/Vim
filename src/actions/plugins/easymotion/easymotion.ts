@@ -10,8 +10,7 @@ export class EasyMotion {
    */
   public accumulation = '';
 
-  public searchStringAccumulation = '';
-  public command: EasyMotionSearchAction;
+  public searchAction: EasyMotionSearchAction;
 
   /**
    * Array of all markers and decorations

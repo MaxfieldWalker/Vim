@@ -1,7 +1,18 @@
 import { RegisterAction } from './../../base';
 import {
-  SearchByCharCommand, EasyMotionCharMoveActionBase, EasyMotionWordMoveActionBase, EasyMotionLineMoveActionBase
+  SearchByCharCommand, SearchByNCharCommand, EasyMotionCharMoveActionBase, EasyMotionWordMoveActionBase, EasyMotionLineMoveActionBase
 } from "./easymotion.cmd";
+
+
+
+// EasyMotion n-char-move action
+
+@RegisterAction
+class EasyMotionNCharSearchCommand extends EasyMotionCharMoveActionBase {
+  constructor() {
+    super('/', new SearchByNCharCommand());
+  }
+}
 
 
 
@@ -171,3 +182,6 @@ class ActionEasyMotionUpLines extends EasyMotionLineMoveActionBase {
     });
   }
 }
+
+
+

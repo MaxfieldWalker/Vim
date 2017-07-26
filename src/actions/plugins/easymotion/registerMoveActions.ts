@@ -1,14 +1,14 @@
 import { RegisterAction } from './../../base';
 import {
-  SearchByCharCommand, SearchByNCharCommand, EasyMotionCharMoveActionBase, EasyMotionWordMoveActionBase, EasyMotionLineMoveActionBase
+  SearchByCharCommand, SearchByNCharCommand, EasyMotionCharMoveCommandBase, EasyMotionWordMoveCommandBase, EasyMotionLineMoveCommandBase
 } from "./easymotion.cmd";
 
 
 
-// EasyMotion n-char-move action
+// EasyMotion n-char-move command
 
 @RegisterAction
-class EasyMotionNCharSearchCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionNCharSearchCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('/', new SearchByNCharCommand());
   }
@@ -16,10 +16,10 @@ class EasyMotionNCharSearchCommand extends EasyMotionCharMoveActionBase {
 
 
 
-// EasyMotion char-move actions
+// EasyMotion char-move commands
 
 @RegisterAction
-class ActionEasyMotionTwoCharSearchCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTwoCharSearchCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('2s', new SearchByCharCommand({
       charCount: 2
@@ -28,7 +28,7 @@ class ActionEasyMotionTwoCharSearchCommand extends EasyMotionCharMoveActionBase 
 }
 
 @RegisterAction
-class ActionEasyMotionTwoCharFindForwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTwoCharFindForwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('2f', new SearchByCharCommand({
       charCount: 2,
@@ -38,7 +38,7 @@ class ActionEasyMotionTwoCharFindForwardCommand extends EasyMotionCharMoveAction
 }
 
 @RegisterAction
-class ActionEasyMotionTwoCharFindBackwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTwoCharFindBackwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('2F', new SearchByCharCommand({
       charCount: 2,
@@ -48,7 +48,7 @@ class ActionEasyMotionTwoCharFindBackwardCommand extends EasyMotionCharMoveActio
 }
 
 @RegisterAction
-class ActionEasyMotionTwoCharTilForwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTwoCharTilForwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('2t', new SearchByCharCommand({
       charCount: 2,
@@ -59,7 +59,7 @@ class ActionEasyMotionTwoCharTilForwardCommand extends EasyMotionCharMoveActionB
 }
 
 @RegisterAction
-class ActionEasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('2T', new SearchByCharCommand({
       charCount: 2,
@@ -70,7 +70,7 @@ class ActionEasyMotionTwoCharTilBackwardCommand extends EasyMotionCharMoveAction
 }
 
 @RegisterAction
-class ActionEasyMotionSearchCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionSearchCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('s', new SearchByCharCommand({
       charCount: 1
@@ -79,7 +79,7 @@ class ActionEasyMotionSearchCommand extends EasyMotionCharMoveActionBase {
 }
 
 @RegisterAction
-class ActionEasyMotionFindForwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionFindForwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('f', new SearchByCharCommand({
       charCount: 1,
@@ -89,7 +89,7 @@ class ActionEasyMotionFindForwardCommand extends EasyMotionCharMoveActionBase {
 }
 
 @RegisterAction
-class ActionEasyMotionFindBackwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionFindBackwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('F', new SearchByCharCommand({
       charCount: 1,
@@ -99,7 +99,7 @@ class ActionEasyMotionFindBackwardCommand extends EasyMotionCharMoveActionBase {
 }
 
 @RegisterAction
-class ActionEasyMotionTilForwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTilForwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('t', new SearchByCharCommand({
       charCount: 1,
@@ -110,7 +110,7 @@ class ActionEasyMotionTilForwardCommand extends EasyMotionCharMoveActionBase {
 }
 
 @RegisterAction
-class ActionEasyMotionTilBackwardCommand extends EasyMotionCharMoveActionBase {
+class EasyMotionTilBackwardCommand extends EasyMotionCharMoveCommandBase {
   constructor() {
     super('T', new SearchByCharCommand({
       charCount: 1,
@@ -122,17 +122,19 @@ class ActionEasyMotionTilBackwardCommand extends EasyMotionCharMoveActionBase {
 
 
 
-// EasyMotion word-move actions
+// EasyMotion word-move commands
 
 @RegisterAction
-class ActionEasyMotionWordCommand extends EasyMotionWordMoveActionBase {
+class EasyMotionWordCommand extends EasyMotionWordMoveCommandBase {
   constructor() {
-    super('w', { searchOptions: "min" });
+    super('w', {
+      searchOptions: "min"
+    });
   }
 }
 
 @RegisterAction
-class ActionEasyMotionEndForwardCommand extends EasyMotionWordMoveActionBase {
+class EasyMotionEndForwardCommand extends EasyMotionWordMoveCommandBase {
   constructor() {
     super('e', {
       searchOptions: "min",
@@ -142,7 +144,16 @@ class ActionEasyMotionEndForwardCommand extends EasyMotionWordMoveActionBase {
 }
 
 @RegisterAction
-class ActionEasyMotionEndBackwardCommand extends EasyMotionWordMoveActionBase {
+class EasyMotionBeginningWordCommand extends EasyMotionWordMoveCommandBase {
+  constructor() {
+    super('b', {
+      searchOptions: "max"
+    });
+  }
+}
+
+@RegisterAction
+class EasyMotionEndBackwardCommand extends EasyMotionWordMoveCommandBase {
   constructor() {
     super('ge', {
       searchOptions: "max",
@@ -151,21 +162,12 @@ class ActionEasyMotionEndBackwardCommand extends EasyMotionWordMoveActionBase {
   }
 }
 
-@RegisterAction
-class ActionEasyMotionBeginningWordCommand extends EasyMotionWordMoveActionBase {
-  constructor() {
-    super('b', {
-      searchOptions: "max"
-    });
-  }
-}
 
 
-
-// EasyMotion line-move actions
+// EasyMotion line-move commands
 
 @RegisterAction
-class ActionEasyMotionDownLines extends EasyMotionLineMoveActionBase {
+class EasyMotionDownLinesCommand extends EasyMotionLineMoveCommandBase {
   constructor() {
     super('j', {
       searchOptions: "min"
@@ -173,15 +175,11 @@ class ActionEasyMotionDownLines extends EasyMotionLineMoveActionBase {
   }
 }
 
-
 @RegisterAction
-class ActionEasyMotionUpLines extends EasyMotionLineMoveActionBase {
+class EasyMotionUpLinesCommand extends EasyMotionLineMoveCommandBase {
   constructor() {
     super('k', {
       searchOptions: "max"
     });
   }
 }
-
-
-

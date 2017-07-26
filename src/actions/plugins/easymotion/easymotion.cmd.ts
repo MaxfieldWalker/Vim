@@ -83,12 +83,12 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
   }
 }
 
-function getMatchesForChar(
+function getMatchesForString(
   position: Position,
   vimState: VimState,
-  searchChar: string,
+  searchString: string,
   options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
-  switch (searchChar) {
+  switch (searchString) {
     case '':
       return [];
     case ' ':
@@ -96,9 +96,9 @@ function getMatchesForChar(
       return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
     default:
       // Search all occurences of the character pressed
-      const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchChar));
+      const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
-      return vimState.easyMotion.sortedSearch(position, new RegExp(searchChar, regexFlags), options);
+      return vimState.easyMotion.sortedSearch(position, new RegExp(searchString, regexFlags), options);
   }
 }
 
@@ -127,7 +127,7 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this._searchString, this.searchOptions(position));
+    return getMatchesForString(position, vimState, this._searchString, this.searchOptions(position));
   }
 
   public updateSearchString(s: string) {
@@ -174,7 +174,7 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForChar(position, vimState, this.removeTrailingLineBreak(this._searchString), {});
+    return getMatchesForString(position, vimState, this.removeTrailingLineBreak(this._searchString), {});
   }
 
   private removeTrailingLineBreak(s: string) {
@@ -195,7 +195,7 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
   }
 }
 
-export class EasyMotionCharMoveActionBase extends BaseCommand {
+export class EasyMotionCharMoveCommandBase extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   private _action: EasyMotionSearchAction;
 
@@ -216,7 +216,7 @@ export class EasyMotionCharMoveActionBase extends BaseCommand {
   }
 }
 
-export class EasyMotionWordMoveActionBase extends BaseEasyMotionCommand {
+export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionWordMoveOpions;
 
   constructor(trigger: string, options: EasyMotionWordMoveOpions = {}) {
@@ -245,7 +245,7 @@ export class EasyMotionWordMoveActionBase extends BaseEasyMotionCommand {
   }
 }
 
-export class EasyMotionLineMoveActionBase extends BaseEasyMotionCommand {
+export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionMoveOptionsBase;
 
   constructor(trigger: string, options: EasyMotionMoveOptionsBase) {
@@ -292,7 +292,7 @@ class EasyMotionCharInputMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandEscEasyMotionNCharInputMode extends BaseCommand {
+class CommandEscEasyMotionCharInputMode extends BaseCommand {
   modes = [ModeName.EasyMotionInputMode];
   keys = ['<Esc>'];
 

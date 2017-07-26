@@ -153,7 +153,7 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
       case "after":
         return new Position(line, character + this._options.charCount);
       case "before":
-        return new Position(line, Math.max(0, character - this._options.charCount));
+        return new Position(line, Math.max(0, character - 1));
       default:
         return match.position;
     }

@@ -101,14 +101,14 @@ function getMatchesForChar(
   }
 }
 
-export interface AfterSearchStringInputAction {
+export interface EasyMotionSearchAction {
   shouldFire(): boolean;
-  updateSearchString(s: string): void;
   fire(position: Position, vimState: VimState): Promise<VimState>;
+  updateSearchString(s: string): void;
   getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 }
 
-export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
+export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
 
   constructor(private _options: EasyMotionCharMoveOpions = { charCount: 1 }) {
@@ -150,9 +150,9 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements AfterS
 
 export class EasyMotionCharMoveActionBase extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  private _command: AfterSearchStringInputAction;
+  private _command: EasyMotionSearchAction;
 
-  constructor(trigger: string, command: AfterSearchStringInputAction) {
+  constructor(trigger: string, command: EasyMotionSearchAction) {
     super();
     this._command = command;
     this.keys = ['<leader>', '<leader>', ...trigger.split('')];
@@ -249,7 +249,7 @@ class CommandEscEasyMotionNCharInputMode extends BaseCommand {
   }
 }
 
-class SearchByNCharCommand extends BaseEasyMotionCommand implements AfterSearchStringInputAction {
+class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
 
   constructor() { super({}); }

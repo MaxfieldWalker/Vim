@@ -10,7 +10,7 @@
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-import { Globals } from '../src/globals';
+import { Globals } from '../../src/globals';
 
 var testRunner = require('vscode/lib/testrunner');
 
@@ -23,13 +23,5 @@ testRunner.configure({
   useColors: true,
   timeout: 10000,
 });
-
-const defaultFunc = testRunner.run;
-
-testRunner.run = (root: any, clb: any) => {
-  console.log(root);
-
-  defaultFunc(root + "\\plugins", clb);
-};
 
 module.exports = testRunner;

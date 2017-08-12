@@ -22,16 +22,16 @@ function versionBump(semver) {
     .pipe(tag_version());
 }
 
-gulp.task('typings', function() {
+gulp.task('typings', function () {
   return gulp.src('./typings.json').pipe(typings());
 });
 
-gulp.task('typings-vscode-definitions', ['typings'], function() {
+gulp.task('typings-vscode-definitions', ['typings'], function () {
   // add vscode definitions
   return gulp.src('./typings/index.d.ts').pipe(gulp.dest('./typings'));
 });
 
-gulp.task('tslint', function() {
+gulp.task('tslint', function () {
   var tslintOptions = {
     summarizeFailureOutput: true,
   };
@@ -61,18 +61,18 @@ gulp.task(
   ])
 );
 
-gulp.task('default', ['prettier', 'tslint', 'compile']);
+gulp.task('default', ['tslint', 'compile']);
 
 gulp.task('compile', shell.task(['npm run vscode:prepublish']));
 gulp.task('watch', shell.task(['npm run compile']));
 gulp.task('init', ['typings', 'typings-vscode-definitions']);
 
-gulp.task('patch', ['default'], function() {
+gulp.task('patch', ['default'], function () {
   return versionBump('patch');
 });
-gulp.task('minor', ['default'], function() {
+gulp.task('minor', ['default'], function () {
   return versionBump('minor');
 });
-gulp.task('major', ['default'], function() {
+gulp.task('major', ['default'], function () {
   return versionBump('major');
 });

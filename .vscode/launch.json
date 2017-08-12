@@ -3,15 +3,19 @@
   "version": "0.1.0",
   "configurations": [
     {
-       "name": "Build, Run Extension",
-       "type": "extensionHost",
-       "request": "launch",
-       "runtimeExecutable": "${execPath}",
-       "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
-       "stopOnEntry": false,
-       "sourceMaps": true,
-       "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
-       "preLaunchTask": "build",
+      "name": "Build, Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/{out, node_modules}/**/*.js"
+      ],
+      "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
@@ -24,7 +28,9 @@
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ]
+      "outFiles": [
+        "${workspaceRoot}/{out, node_modules}/**/*.js"
+      ]
     },
     {
       "name": "Run Tests",
@@ -33,11 +39,13 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/out/test"
+        "--extensionTestsPath=${workspaceRoot}/out/test/plugins"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
+      "outFiles": [
+        "${workspaceRoot}/{out, node_modules}/**/*.js"
+      ],
       "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart"
     }

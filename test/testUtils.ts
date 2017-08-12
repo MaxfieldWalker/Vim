@@ -28,7 +28,7 @@ export function assertEqualLines(expectedLines: string[]) {
     assert.equal(
       actual,
       expected,
-      `Content does not match; Expected=${expected}. Actual=${actual}`
+      `Content does not match; Expected=${expected}. Actual=${actual}.`
     );
   }
 
@@ -88,11 +88,18 @@ export async function cleanUpWorkspace(): Promise<any> {
 }
 
 export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
-  Configuration.enableNeovim = true;
+  Configuration.enableNeovim = false;
   Configuration.tabstop = tabSize;
   Configuration.expandtab = insertSpaces;
   let options = vscode.window.activeTextEditor!.options;
   options.tabSize = tabSize;
   options.insertSpaces = insertSpaces;
   vscode.window.activeTextEditor!.options = options;
+}
+
+export function crossPlatformIt(text: string): string {
+  if (process.platform === 'win32') {
+    return text.replace(/\\n/g, '\\r\\n');
+  }
+  return text;
 }

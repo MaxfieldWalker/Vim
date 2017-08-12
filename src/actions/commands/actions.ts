@@ -932,6 +932,8 @@ class CommandOverrideCopy extends BaseCommand {
     }
 
     util.clipboardCopy(text);
+    // all vim yank operations return to normal mode.
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
@@ -1693,7 +1695,7 @@ class CommandCloseAllFoldsRecursively extends CommandFold {
 class CommandOpenAllFoldsRecursively extends CommandFold {
   modes = [ModeName.Normal];
   keys = ['z', 'O'];
-  commandName = 'editor.unFoldRecursively';
+  commandName = 'editor.unfoldRecursively';
 }
 
 @RegisterAction

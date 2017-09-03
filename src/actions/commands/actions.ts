@@ -205,11 +205,11 @@ export abstract class BaseCommand extends BaseAction {
     const cursorsToIterateOver = vimState.allCursors
       .map(x => new Range(x.start, x.stop))
       .sort(
-      (a, b) =>
-        a.start.line > b.start.line ||
+        (a, b) =>
+          a.start.line > b.start.line ||
           (a.start.line === b.start.line && a.start.character > b.start.character)
-          ? 1
-          : -1
+            ? 1
+            : -1
       );
 
     for (const { start, stop } of cursorsToIterateOver) {
@@ -462,7 +462,7 @@ class CommandEsc extends BaseCommand {
     ModeName.SearchInProgressMode,
     ModeName.SurroundInputMode,
     ModeName.EasyMotionMode,
-    ModeName.EasyMotionInputMode
+    ModeName.EasyMotionInputMode,
   ];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
@@ -548,18 +548,6 @@ class CommandEscReplaceMode extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandCtrlOpenBracket extends CommandEsc {
-  modes = [
-    ModeName.Insert,
-    ModeName.Visual,
-    ModeName.VisualLine,
-    ModeName.VisualBlock,
-    ModeName.Replace,
-  ];
-  keys = [['<C-[>']];
-}
-
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   runsOnceForEachCountPrefix = false;
@@ -578,9 +566,9 @@ abstract class CommandEditorScroll extends BaseCommand {
         value: timesToRepeat,
         revealCursor: true,
         select:
-        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
-          vimState.currentMode
-        ) >= 0,
+          [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+            vimState.currentMode
+          ) >= 0,
       },
     });
     return vimState;
@@ -2670,11 +2658,11 @@ class ActionJoin extends BaseCommand {
     const cursorsToIterateOver = vimState.allCursors
       .map(x => new Range(x.start, x.stop))
       .sort(
-      (a, b) =>
-        a.start.line > b.start.line ||
+        (a, b) =>
+          a.start.line > b.start.line ||
           (a.start.line === b.start.line && a.start.character > b.start.character)
-          ? 1
-          : -1
+            ? 1
+            : -1
       );
 
     for (const { start, stop } of cursorsToIterateOver) {
@@ -3401,25 +3389,25 @@ class ActionOverrideCmdDInsert extends BaseCommand {
     // selections to the word boundaries before we make the api call.
     vscode.window.activeTextEditor!.selections = vscode.window
       .activeTextEditor!.selections.map((x, idx) => {
-        const curPos = Position.FromVSCodePosition(x.active);
-        if (idx === 0) {
-          return new vscode.Selection(
-            curPos.getWordLeft(false),
-            curPos.getLeft().getCurrentWordEnd(true).getRight()
-          );
-        } else {
-          // Since we're adding the selections ourselves, we need to make sure
-          // that our selection is actually over what our original word is
-          const matchWordPos = Position.FromVSCodePosition(
-            vscode.window.activeTextEditor!.selections[0].active
-          );
-          const matchWordLength =
-            matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
-            matchWordPos.getWordLeft(false).character;
-          const wordBegin = curPos.getLeftByCount(matchWordLength);
-          return new vscode.Selection(wordBegin, curPos);
-        }
-      });
+      const curPos = Position.FromVSCodePosition(x.active);
+      if (idx === 0) {
+        return new vscode.Selection(
+          curPos.getWordLeft(false),
+          curPos.getLeft().getCurrentWordEnd(true).getRight()
+        );
+      } else {
+        // Since we're adding the selections ourselves, we need to make sure
+        // that our selection is actually over what our original word is
+        const matchWordPos = Position.FromVSCodePosition(
+          vscode.window.activeTextEditor!.selections[0].active
+        );
+        const matchWordLength =
+          matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
+          matchWordPos.getWordLeft(false).character;
+        const wordBegin = curPos.getLeftByCount(matchWordLength);
+        return new vscode.Selection(wordBegin, curPos);
+      }
+    });
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
     return vimState;

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { EasyMotionSearchAction } from "./easymotion.cmd";
+import { EasyMotionSearchAction } from './easymotion.cmd';
 
 export class EasyMotion {
   /**
@@ -102,8 +102,7 @@ export class EasyMotion {
       const totalRemainder = Math.max(length - keyTable.length, 0);
       totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-      Array(Math.min(totalSteps, 26))
-        .forEach(() => keyDepthTable.push(availableKeyTable.pop()!));
+      Array(Math.min(totalSteps, 26)).forEach(() => keyDepthTable.push(availableKeyTable.pop()!));
     }
 
     let prefix = '';
@@ -217,9 +216,9 @@ export class EasyMotion {
     } else {
       const uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-        `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
+          `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+          `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+          `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
       );
 
       this.svgCache[code] = uri;
@@ -270,9 +269,10 @@ export class EasyMotion {
     search: string | RegExp = '',
     options: EasyMotion.SearchOptions = {}
   ): EasyMotion.Match[] {
-    const regex = typeof search === 'string'
-      ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
-      : search;
+    const regex =
+      typeof search === 'string'
+        ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
+        : search;
 
     const matches: EasyMotion.Match[] = [];
 
@@ -368,7 +368,7 @@ export class EasyMotion {
             Configuration.easymotionMarkerFontSize,
             Configuration.easymotionMarkerFontWeight
           ),
-        }
+        },
       };
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
       const charPos = pos.character + 1 + (keystroke.length - 1);
